@@ -27,10 +27,10 @@ jar_files = [
 jar_files_str = ";".join(jar_files)
 
 # Set the configuration
-table_env = TableEnvironment.create(EnvironmentSettings.in_batch_mode())  # for mongodb
-# table_env = TableEnvironment.create(EnvironmentSettings.in_streaming_mode()) # for kafka
+# table_env = TableEnvironment.create(EnvironmentSettings.in_batch_mode())  # for mongodb
+table_env = TableEnvironment.create(EnvironmentSettings.in_streaming_mode())  # for kafka
 table_env.get_config().set("pipeline.jars", jar_files_str)
-table_env.get_config().set("parallelism.default", "1")
+table_env.get_config().set("parallelism.default", "4")
 
 # Table API mongodb
 table_env.execute_sql("CREATE TABLE flink_mongodb_stock (" +
@@ -49,85 +49,97 @@ table_env.execute_sql("CREATE TABLE flink_mongodb_stock (" +
                       ");")
 
 # Define a query
-query1 = table_env.sql_query("SELECT * FROM (" +
-                             "SELECT " +
-                             "*, " +
-                             "ROW_NUMBER() OVER (PARTITION BY `ticker` ORDER BY `date` DESC) AS row_num " +
-                             "FROM flink_mongodb_stock " +
-                             ") WHERE row_num <= 10 AND `date` = '2023-07-28'")
+# query1 = table_env.sql_query("SELECT * FROM (" +
+#                               "SELECT " +
+#                               "*, " +
+#                               "ROW_NUMBER() OVER (PARTITION BY `ticker` ORDER BY `date` DESC) AS row_num " +
+#                               "FROM flink_mongodb_stock " +
+#                               ") WHERE row_num <= 10 AND `date` = '2023-07-28'")
 
-# # Kafka Config
-# topic1 = "KSQLTABLEGROUPSTOCK"  # KSQLDB Table
-# topic2 = "KSQLTABLEGROUPCOMPANY"  # KSQLDB Table
-# group = "flink-group-idx-stock-consumer"
-# kafka_bootstrap_server = "localhost:19092,localhost:19093,localhost:19094"
-# ksql_schema_server = "http://localhost:8282"
-#
-# # KAFKA SQL TABLE MUST USE UPPERCASE COLUMN NAME
-# table_env.execute_sql("CREATE TABLE flink_ksql_groupstock (" +
-#                       "  `EVENT_TIME` TIMESTAMP(3) METADATA FROM 'timestamp', " +
-#                       "  `STOCKID` STRING, " +
-#                       "  `TICKER` STRING, " +
-#                       "  `DATE` STRING, " +
-#                       "  `OPEN` DOUBLE, " +
-#                       "  `HIGH` DOUBLE, " +
-#                       "  `LOW` DOUBLE, " +
-#                       "  `CLOSE` DOUBLE, " +
-#                       "  `VOLUME` BIGINT " +
-#                       ") WITH (" +
-#                       "  'connector' = 'kafka', " +
-#                       "  'topic' = '" + topic1 + "', " +
-#                       "  'properties.bootstrap.servers' = '" + kafka_bootstrap_server + "', " +
-#                       "  'properties.group.id' = '" + group + "', " +
-#                       "  'scan.startup.mode' = 'earliest-offset', " +
-#                       "  'value.format' = 'avro-confluent', " +
-#                       "  'value.avro-confluent.url' = '" + ksql_schema_server + "' " +
-#                       ")")
-#
-# # KAFKA SQL TABLE MUST USE UPPERCASE COLUMN NAME
-# table_env.execute_sql("CREATE TABLE flink_ksql_groupcompany (" +
-#                       "  `EVENT_TIME` TIMESTAMP(3) METADATA FROM 'timestamp', " +
-#                       "  `COMPANYID` STRING, " +
-#                       "  `TICKER` STRING, " +
-#                       "  `NAME` STRING, " +
-#                       "  `LOGO` STRING " +
-#                       ") WITH (" +
-#                       "  'connector' = 'kafka', " +
-#                       "  'topic' = '" + topic2 + "', " +
-#                       "  'properties.bootstrap.servers' = '" + kafka_bootstrap_server + "', " +
-#                       "  'properties.group.id' = '" + group + "', " +
-#                       "  'scan.startup.mode' = 'earliest-offset', " +
-#                       "  'value.format' = 'avro-confluent', " +
-#                       "  'value.avro-confluent.url' = '" + ksql_schema_server + "' " +
-#                       ")")
-#
-# # Define a query
-# query2 = table_env.sql_query("SELECT " +
-#                              "  table1.`EVENT_TIME`," +
-#                              "  `STOCKID`," +
-#                              "  table1.`TICKER`," +
-#                              "  `DATE`," +
-#                              "  `OPEN`," +
-#                              "  `HIGH`," +
-#                              "  `LOW`," +
-#                              "  `CLOSE`," +
-#                              "  `VOLUME`, " +
-#                              "  `NAME`, " +
-#                              "  `LOGO` " +
-#                              "  FROM flink_ksql_groupstock table1" +
-#                              "  INNER JOIN flink_ksql_groupcompany table2" +
-#                              "  ON table1.TICKER = table2.TICKER")
-#
-# # execute Table
-# table_result2 = query2.execute()
-# # table_result2.print()
-# with table_result2.collect() as results:
-#     for row in results:
-#         print(str(row[0]) + " ---- " + str(row[1]) + " ---- " + str(row[2]) + " ---- " + str(row[4]) + " ---- " + str(
-#             row[7]))
+# Define a query
+query1 = table_env.sql_query("SELECT * FROM flink_mongodb_stock LIMIT 10")
 
-table_result1 = query1.execute()
-table_result1.print()
+# Kafka Config
+topic1 = "KSQLTABLEGROUPSTOCK"  # KSQLDB Table
+topic2 = "KSQLTABLEGROUPCOMPANY"  # KSQLDB Table
+group = "flink-group-idx-stock-consumer"
+kafka_bootstrap_server = "localhost:19092,localhost:19093,localhost:19094"
+ksql_schema_server = "http://localhost:8282"
+
+# KAFKA SQL TABLE MUST USE UPPERCASE COLUMN NAME
+table_env.execute_sql("CREATE TABLE flink_ksql_groupstock (" +
+                      "  `EVENT_TIME` TIMESTAMP(3) METADATA FROM 'timestamp', " +
+                      "  `STOCKID` STRING, " +
+                      "  `TICKER` STRING, " +
+                      "  `DATE` STRING, " +
+                      "  `OPEN` DOUBLE, " +
+                      "  `HIGH` DOUBLE, " +
+                      "  `LOW` DOUBLE, " +
+                      "  `CLOSE` DOUBLE, " +
+                      "  `VOLUME` BIGINT " +
+                      ") WITH (" +
+                      "  'connector' = 'kafka', " +
+                      "  'topic' = '" + topic1 + "', " +
+                      "  'properties.bootstrap.servers' = '" + kafka_bootstrap_server + "', " +
+                      "  'properties.group.id' = '" + group + "', " +
+                      # "  'scan.startup.mode' = 'earliest-offset', " +
+                      "  'scan.startup.mode' = 'latest-offset', " +
+                      "  'value.format' = 'avro-confluent', " +
+                      "  'value.avro-confluent.url' = '" + ksql_schema_server + "' " +
+                      ")")
+
+# KAFKA SQL TABLE MUST USE UPPERCASE COLUMN NAME
+table_env.execute_sql("CREATE TABLE flink_ksql_groupcompany (" +
+                      "  `EVENT_TIME` TIMESTAMP(3) METADATA FROM 'timestamp', " +
+                      "  `COMPANYID` STRING, " +
+                      "  `TICKER` STRING, " +
+                      "  `NAME` STRING, " +
+                      "  `LOGO` STRING " +
+                      ") WITH (" +
+                      "  'connector' = 'kafka', " +
+                      "  'topic' = '" + topic2 + "', " +
+                      "  'properties.bootstrap.servers' = '" + kafka_bootstrap_server + "', " +
+                      "  'properties.group.id' = '" + group + "', " +
+                      # "  'scan.startup.mode' = 'earliest-offset', " +
+                      "  'scan.startup.mode' = 'latest-offset', " +
+                      "  'value.format' = 'avro-confluent', " +
+                      "  'value.avro-confluent.url' = '" + ksql_schema_server + "' " +
+                      ")")
+
+# Define a query
+query2 = table_env.sql_query("SELECT " +
+                             # "  ROW_NUMBER() OVER (PARTITION BY `TICKER` ORDER BY `EVENT_TIME`)  AS rownum" +
+                             "  `STOCKID`," +
+                             "  table1.`TICKER`," +
+                             "  `DATE`," +
+                             "  `OPEN`," +
+                             "  `HIGH`," +
+                             "  `LOW`," +
+                             "  `CLOSE`," +
+                             "  `VOLUME`, " +
+                             "  `NAME`, " +
+                             "  `LOGO` " +
+                             "  FROM flink_ksql_groupstock table1" +
+                             "  INNER JOIN flink_ksql_groupcompany table2" +
+                             "  ON table1.TICKER = table2.TICKER"
+                             # "  WHERE `DATE` = '2023-07-28'"
+                             )
+
+# Convert to dataframe
+df_mongodb = query1.to_pandas()
+print(df_mongodb.head(10))
+
+# Execute Table
+table_result2 = query2.execute()
+# table_result2.print()
+with table_result2.collect() as results:
+    for row in results:
+        print(str(row[0]) + " ---- " + str(row[1]) + " ---- " + str(row[2]) + " ---- " + str(row[4]) + " ---- " + str(
+            row[7]))
+
+
+# table_result1 = query1.execute()
+# table_result1.print()
 # with table_result1.collect() as results:
 #     for row in results:
 #         print(str(row[0]) + " ---- " + str(row[1]) + " ---- " + str(row[3]) + " ---- " + str(row[5]))
