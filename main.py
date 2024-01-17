@@ -108,7 +108,6 @@ table_env.execute_sql("CREATE TABLE flink_ksql_groupcompany (" +
 
 # Define a query
 query2 = table_env.sql_query("SELECT " +
-                             # "  ROW_NUMBER() OVER (PARTITION BY `TICKER` ORDER BY `EVENT_TIME`)  AS rownum" +
                              "  `STOCKID`," +
                              "  table1.`TICKER`," +
                              "  `DATE`," +
@@ -122,7 +121,6 @@ query2 = table_env.sql_query("SELECT " +
                              "  FROM flink_ksql_groupstock table1" +
                              "  INNER JOIN flink_ksql_groupcompany table2" +
                              "  ON table1.TICKER = table2.TICKER"
-                             # "  WHERE `DATE` = '2023-07-28'"
                              )
 
 # Convert to dataframe
