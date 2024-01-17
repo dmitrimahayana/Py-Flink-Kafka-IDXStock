@@ -4,25 +4,25 @@ from pyflink.table import *
 jars_path = "D:/00%20Project/00%20My%20Project/Jars/Kafka%201.17/"
 jar_files = [
     "file:///" + jars_path + "avro-1.11.0.jar",
-    "file:///" + jars_path + "bson-4.7.2.jar",
+    # "file:///" + jars_path + "bson-4.7.2.jar",
     "file:///" + jars_path + "flink-avro-1.17.1.jar",
     "file:///" + jars_path + "flink-avro-confluent-registry-1.17.1.jar",
-    "file:///" + jars_path + "flink-connector-files-1.17.1.jar",
-    "file:///" + jars_path + "flink-connector-kafka-1.17.1.jar",
-    "file:///" + jars_path + "flink-connector-mongodb-1.0.1-1.17.jar",
-    "file:///" + jars_path + "flink-ml-uber-1.17-2.3.0.jar",
+    # "file:///" + jars_path + "flink-connector-files-1.17.1.jar",
+    # "file:///" + jars_path + "flink-connector-kafka-1.17.1.jar",
+    # "file:///" + jars_path + "flink-connector-mongodb-1.0.1-1.17.jar",
+    # "file:///" + jars_path + "flink-ml-uber-1.17-2.3.0.jar",
     "file:///" + jars_path + "flink-sql-connector-kafka-1.17.1.jar",
     "file:///" + jars_path + "flink-sql-connector-mongodb-1.0.1-1.17.jar",
-    "file:///" + jars_path + "flink-table-runtime-1.17.1.jar",
+    # "file:///" + jars_path + "flink-table-runtime-1.17.1.jar",
     "file:///" + jars_path + "guava-30.1.1-jre.jar",
     "file:///" + jars_path + "jackson-annotations-2.12.5.jar",
     "file:///" + jars_path + "jackson-core-2.12.5.jar",
     "file:///" + jars_path + "jackson-databind-2.12.5.jar",
     "file:///" + jars_path + "kafka-clients-3.2.3.jar",
     "file:///" + jars_path + "kafka-schema-registry-client-7.4.0.jar",
-    "file:///" + jars_path + "mongodb-driver-core-4.7.2.jar",
-    "file:///" + jars_path + "mongodb-driver-sync-4.7.2.jar",
-    "file:///" + jars_path + "statefun-flink-core-3.2.0.jar"
+    # "file:///" + jars_path + "mongodb-driver-core-4.7.2.jar",
+    # "file:///" + jars_path + "mongodb-driver-sync-4.7.2.jar",
+    # "file:///" + jars_path + "statefun-flink-core-3.2.0.jar",
 ]
 jar_files_str = ";".join(jar_files)
 
@@ -82,8 +82,8 @@ table_env.execute_sql("CREATE TABLE flink_ksql_groupstock (" +
                       "  'topic' = '" + topic1 + "', " +
                       "  'properties.bootstrap.servers' = '" + kafka_bootstrap_server + "', " +
                       "  'properties.group.id' = '" + group + "', " +
-                      # "  'scan.startup.mode' = 'earliest-offset', " +
-                      "  'scan.startup.mode' = 'latest-offset', " +
+                      "  'scan.startup.mode' = 'earliest-offset', " +
+                      # "  'scan.startup.mode' = 'latest-offset', " +
                       "  'value.format' = 'avro-confluent', " +
                       "  'value.avro-confluent.url' = '" + ksql_schema_server + "' " +
                       ")")
@@ -100,8 +100,8 @@ table_env.execute_sql("CREATE TABLE flink_ksql_groupcompany (" +
                       "  'topic' = '" + topic2 + "', " +
                       "  'properties.bootstrap.servers' = '" + kafka_bootstrap_server + "', " +
                       "  'properties.group.id' = '" + group + "', " +
-                      # "  'scan.startup.mode' = 'earliest-offset', " +
-                      "  'scan.startup.mode' = 'latest-offset', " +
+                      "  'scan.startup.mode' = 'earliest-offset', " +
+                      # "  'scan.startup.mode' = 'latest-offset', " +
                       "  'value.format' = 'avro-confluent', " +
                       "  'value.avro-confluent.url' = '" + ksql_schema_server + "' " +
                       ")")
@@ -120,7 +120,8 @@ query2 = table_env.sql_query("SELECT " +
                              "  `LOGO` " +
                              "  FROM flink_ksql_groupstock table1" +
                              "  INNER JOIN flink_ksql_groupcompany table2" +
-                             "  ON table1.TICKER = table2.TICKER"
+                             "  ON table1.TICKER = table2.TICKER" +
+                             "  WHERE `DATE`  = '2023-07-28'"
                              )
 
 # Convert to dataframe
