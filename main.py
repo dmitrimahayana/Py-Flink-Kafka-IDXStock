@@ -68,7 +68,8 @@ topic1 = "KSQLTABLEGROUPSTOCK"  # KSQLDB Table
 topic2 = "KSQLTABLEGROUPCOMPANY"  # KSQLDB Table
 group = "flink-group-idx-stock-consumer"
 kafka_bootstrap_server = "localhost:19092,localhost:19093,localhost:19094"
-ksql_schema_server = "http://localhost:8282"
+kafka_schema_server = "http://localhost:8282"
+offset = 'earliest-offset'  # Use earliest-offset OR latest-offset
 
 # KAFKA SQL TABLE MUST USE UPPERCASE COLUMN NAME
 table_env.execute_sql("CREATE TABLE flink_ksql_groupstock (" +
@@ -86,10 +87,9 @@ table_env.execute_sql("CREATE TABLE flink_ksql_groupstock (" +
                       "  'topic' = '" + topic1 + "', " +
                       "  'properties.bootstrap.servers' = '" + kafka_bootstrap_server + "', " +
                       "  'properties.group.id' = '" + group + "', " +
-                      "  'scan.startup.mode' = 'earliest-offset', " +
-                      # "  'scan.startup.mode' = 'latest-offset', " +
+                      "  'scan.startup.mode' = '" + offset + "', " +
                       "  'value.format' = 'avro-confluent', " +
-                      "  'value.avro-confluent.url' = '" + ksql_schema_server + "' " +
+                      "  'value.avro-confluent.url' = '" + kafka_schema_server + "' " +
                       ")")
 
 # KAFKA SQL TABLE MUST USE UPPERCASE COLUMN NAME
@@ -104,10 +104,9 @@ table_env.execute_sql("CREATE TABLE flink_ksql_groupcompany (" +
                       "  'topic' = '" + topic2 + "', " +
                       "  'properties.bootstrap.servers' = '" + kafka_bootstrap_server + "', " +
                       "  'properties.group.id' = '" + group + "', " +
-                      "  'scan.startup.mode' = 'earliest-offset', " +
-                      # "  'scan.startup.mode' = 'latest-offset', " +
+                      "  'scan.startup.mode' = '" + offset + "', " +
                       "  'value.format' = 'avro-confluent', " +
-                      "  'value.avro-confluent.url' = '" + ksql_schema_server + "' " +
+                      "  'value.avro-confluent.url' = '" + kafka_schema_server + "' " +
                       ")")
 
 # Define a query
@@ -125,12 +124,11 @@ query2 = table_env.sql_query("SELECT " +
                              "  FROM flink_ksql_groupstock table1" +
                              "  INNER JOIN flink_ksql_groupcompany table2" +
                              "  ON table1.TICKER = table2.TICKER" +
-                             "  WHERE `DATE`  = '2023-07-28'"
+                             "  WHERE `DATE`  = '2024-01-11'"
                              )
 
 # Execute Table
 table_result2 = query2.execute()
-# table_result2.print()
 with table_result2.collect() as results:
     for row in results:
         print(str(row[0]) + " ---- " + str(row[1]) + " ---- " + str(row[2]) + " ---- " + str(row[4]) + " ---- " + str(
