@@ -57,10 +57,10 @@ table_env.execute_sql("CREATE TABLE flink_mongodb_stock (" +
 #                               ") WHERE row_num <= 10 AND `date` = '2023-07-28'")
 
 # Define a query
-query1 = table_env.sql_query("SELECT * FROM flink_mongodb_stock LIMIT 10")
+table_output1 = table_env.sql_query("SELECT * FROM flink_mongodb_stock LIMIT 10")
 
 # Convert to dataframe
-df_mongodb = query1.to_pandas()
+df_mongodb = table_output1.to_pandas()
 print(df_mongodb.head(10))
 
 # Kafka Config
@@ -110,25 +110,25 @@ table_env.execute_sql("CREATE TABLE flink_ksql_groupcompany (" +
                       ")")
 
 # Define a query
-query2 = table_env.sql_query("SELECT " +
-                             "  `STOCKID`," +
-                             "  table1.`TICKER`," +
-                             "  `DATE`," +
-                             "  `OPEN`," +
-                             "  `HIGH`," +
-                             "  `LOW`," +
-                             "  `CLOSE`," +
-                             "  `VOLUME`, " +
-                             "  `NAME`, " +
-                             "  `LOGO` " +
-                             "  FROM flink_ksql_groupstock table1" +
-                             "  INNER JOIN flink_ksql_groupcompany table2" +
-                             "  ON table1.TICKER = table2.TICKER" +
-                             "  WHERE `DATE`  = '2024-01-11'"
-                             )
+table_output2 = table_env.sql_query("SELECT " +
+                                    "  `STOCKID`," +
+                                    "  table1.`TICKER`," +
+                                    "  `DATE`," +
+                                    "  `OPEN`," +
+                                    "  `HIGH`," +
+                                    "  `LOW`," +
+                                    "  `CLOSE`," +
+                                    "  `VOLUME`, " +
+                                    "  `NAME`, " +
+                                    "  `LOGO` " +
+                                    "  FROM flink_ksql_groupstock table1" +
+                                    "  INNER JOIN flink_ksql_groupcompany table2" +
+                                    "  ON table1.TICKER = table2.TICKER" +
+                                    "  WHERE `DATE`  = '2024-01-11'"
+                                    )
 
 # Execute Table
-table_result2 = query2.execute()
+table_result2 = table_output2.execute()
 with table_result2.collect() as results:
     for row in results:
         print(str(row[0]) + " ---- " + str(row[1]) + " ---- " + str(row[2]) + " ---- " + str(row[4]) + " ---- " + str(
